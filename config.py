@@ -15,6 +15,7 @@ def add_argument_group(name):
 data_arg = add_argument_group('Dataset')
 data_arg.add_argument('--dataset', type=str, default='vimeo90k')
 data_arg.add_argument('--texture', type=str, default='mixed')
+data_arg.add_argument('--out_dir', type=str, default='')
 data_arg.add_argument('--num_frames', type=int, default=3)
 data_arg.add_argument('--data_root', type=str, default='data/vimeo_triplet')
 data_arg.add_argument('--img_fmt', type=str, default='png')
