@@ -7,7 +7,6 @@ import random
 
 import torch
 import numpy as np
-from tqdm import tqdm
 # from torch.utils.tensorboard import SummaryWriter
 
 import config
@@ -147,81 +146,81 @@ def train(args, epoch):
             t = time.time()
 
 
-def test(args, epoch, eval_alpha=0.5):
-    print('Evaluating for epoch = %d' % epoch)
-    losses, psnrs, ssims, lpips = utils.init_meters(args.loss)
-    model.eval()
-    criterion.eval()
+# def test(args, epoch, eval_alpha=0.5):
+#     print('Evaluating for epoch = %d' % epoch)
+#     losses, psnrs, ssims, lpips = utils.init_meters(args.loss)
+#     model.eval()
+#     criterion.eval()
 
-    save_folder = 'test%03d' % epoch
-    if args.dataset == 'snufilm':
-        save_folder = os.path.join(save_folder, args.dataset, args.test_mode)
-    else:
-        save_folder = os.path.join(save_folder, args.dataset)
-    save_dir = os.path.join('checkpoint', args.exp_name, save_folder)
-    utils.makedirs(save_dir)
-    save_fn = os.path.join(save_dir, 'results.txt')
-    if not os.path.exists(save_fn):
-        with open(save_fn, 'w') as f:
-            f.write('For epoch=%d\n' % epoch)
+#     save_folder = 'test%03d' % epoch
+#     if args.dataset == 'snufilm':
+#         save_folder = os.path.join(save_folder, args.dataset, args.test_mode)
+#     else:
+#         save_folder = os.path.join(save_folder, args.dataset)
+#     save_dir = os.path.join('checkpoint', args.exp_name, save_folder)
+#     utils.makedirs(save_dir)
+#     save_fn = os.path.join(save_dir, 'results.txt')
+#     if not os.path.exists(save_fn):
+#         with open(save_fn, 'w') as f:
+#             f.write('For epoch=%d\n' % epoch)
 
-    t = time.time()
-    with torch.no_grad():
-        for i, (images, imgpaths) in enumerate(tqdm(test_loader)):
+#     t = time.time()
+#     with torch.no_grad():
+#         for i, (images, imgpaths) in enumerate(tqdm(test_loader)):
 
-            # Build input batch
-            im1, im2, gt = utils.build_input(images, imgpaths, is_training=False)
+#             # Build input batch
+#             im1, im2, gt = utils.build_input(images, imgpaths, is_training=False)
 
-            # Forward
-            out, feats = model(im1, im2)
+#             # Forward
+#             out, feats = model(im1, im2)
 
-            # Save loss values
-            loss, loss_specific = criterion(out, gt, None, feats)
-            for k, v in losses.items():
-                if k != 'total':
-                    v.update(loss_specific[k].item())
-            losses['total'].update(loss.item())
+#             # Save loss values
+#             loss, loss_specific = criterion(out, gt, None, feats)
+#             for k, v in losses.items():
+#                 if k != 'total':
+#                     v.update(loss_specific[k].item())
+#             losses['total'].update(loss.item())
 
-            # Evaluate metrics
-            utils.eval_metrics(out, gt, psnrs, ssims, lpips)
+#             # Evaluate metrics
+#             utils.eval_metrics(out, gt, psnrs, ssims, lpips)
 
-            # Log examples that have bad performance
-            if (ssims.val < 0.9 or psnrs.val < 25) and epoch > 50:
-                print(imgpaths)
-                print("\nLoss: %f, PSNR: %f, SSIM: %f, LPIPS: %f" %
-                      (losses['total'].val, psnrs.val, ssims.val, lpips.val))
-                print(imgpaths[1][-1])
+#             # Log examples that have bad performance
+#             if (ssims.val < 0.9 or psnrs.val < 25) and epoch > 50:
+#                 print(imgpaths)
+#                 print("\nLoss: %f, PSNR: %f, SSIM: %f, LPIPS: %f" %
+#                       (losses['total'].val, psnrs.val, ssims.val, lpips.val))
+#                 print(imgpaths[1][-1])
 
-            # Save result images
-            if ((epoch + 1) % 1 == 0 and i < 20) or args.mode == 'test':
-                savepath = os.path.join('checkpoint', args.exp_name, save_folder)
+#             # Save result images
+#             if ((epoch + 1) % 1 == 0 and i < 20) or args.mode == 'test':
+#                 savepath = os.path.join('checkpoint', args.exp_name, save_folder)
 
-                for b in range(images[0].size(0)):
-                    paths = imgpaths[1][b].split('/')
-                    fp = os.path.join(savepath, paths[-3], paths[-2])
-                    if not os.path.exists(fp):
-                        os.makedirs(fp)
-                    # remove '.png' extension
-                    fp = os.path.join(fp, paths[-1][:-4])
-                    utils.save_image(out[b], "%s.png" % fp)
+#                 for b in range(images[0].size(0)):
+#                     paths = imgpaths[1][b].split('/')
+#                     fp = os.path.join(savepath, paths[-3], paths[-2])
+#                     if not os.path.exists(fp):
+#                         os.makedirs(fp)
+#                     # remove '.png' extension
+#                     fp = os.path.join(fp, paths[-1][:-4])
+#                     utils.save_image(out[b], "%s.png" % fp)
                     
-    # Print progress
-    print('im_processed: {:d}/{:d} {:.3f}s   \r'.format(i + 1, len(test_loader), time.time() - t))
-    print("Loss: %f, PSNR: %f, SSIM: %f, LPIPS: %f\n" %
-          (losses['total'].avg, psnrs.avg, ssims.avg, lpips.avg))
+#     # Print progress
+#     print('im_processed: {:d}/{:d} {:.3f}s   \r'.format(i + 1, len(test_loader), time.time() - t))
+#     print("Loss: %f, PSNR: %f, SSIM: %f, LPIPS: %f\n" %
+#           (losses['total'].avg, psnrs.avg, ssims.avg, lpips.avg))
 
-    # Save psnr & ssim
-    save_fn = os.path.join('checkpoint', args.exp_name, save_folder, 'results.txt')
-    with open(save_fn, 'a') as f:
-        f.write("PSNR: %f, SSIM: %f, LPIPS: %f\n" %
-                (psnrs.avg, ssims.avg, lpips.avg))
+#     # Save psnr & ssim
+#     save_fn = os.path.join('checkpoint', args.exp_name, save_folder, 'results.txt')
+#     with open(save_fn, 'a') as f:
+#         f.write("PSNR: %f, SSIM: %f, LPIPS: %f\n" %
+#                 (psnrs.avg, ssims.avg, lpips.avg))
 
-    # Log to TensorBoard
-    # if args.mode != 'test':
-    #     utils.log_tensorboard(writer, losses, psnrs.avg, ssims.avg, lpips.avg,
-    #         optimizer.param_groups[-1]['lr'], epoch * len(train_loader) + i, mode='test')
+#     # Log to TensorBoard
+#     # if args.mode != 'test':
+#     #     utils.log_tensorboard(writer, losses, psnrs.avg, ssims.avg, lpips.avg,
+#     #         optimizer.param_groups[-1]['lr'], epoch * len(train_loader) + i, mode='test')
 
-    return losses['total'].avg, psnrs.avg, ssims.avg, lpips.avg
+#     return losses['total'].avg, psnrs.avg, ssims.avg, lpips.avg
 
 
 """ Entry Point """
