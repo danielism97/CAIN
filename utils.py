@@ -56,19 +56,23 @@ def load_dataset(dataset_str, data_root, batch_size, test_batch_size, num_worker
     return train_loader, test_loader
 
 
-def build_input(images, imgpaths, is_training=True, include_edge=False, device=torch.device('cuda')):
-    if isinstance(images[0], list):
-        images_gathered = [None, None, None]
-        for j in range(len(images[0])):  # 3
-            _images = [images[k][j] for k in range(len(images))]
-            images_gathered[j] = torch.cat(_images, 0)
-        imgpaths = [p for _ in images for p in imgpaths]
-        images = images_gathered
+# def build_input(images, imgpaths, is_training=True, include_edge=False, device=torch.device('cuda')):
+#     if isinstance(images[0], list):
+#         images_gathered = [None, None, None]
+#         for j in range(len(images[0])):  # 3
+#             _images = [images[k][j] for k in range(len(images))]
+#             images_gathered[j] = torch.cat(_images, 0)
+#         imgpaths = [p for _ in images for p in imgpaths]
+#         images = images_gathered
 
-    im1, im2 = images[0].to(device), images[2].to(device)
-    gt = images[1].to(device)
+#     im1, im2 = images[0].to(device), images[2].to(device)
+#     gt = images[1].to(device)
 
-    return im1, im2, gt
+#     return im1, im2, gt
+def build_input(x):
+    if torch.cuda.is_available():
+        x = x.cuda()
+    return x
 
 
 def load_checkpoint(args, model, optimizer, fix_loaded=False):
