@@ -69,9 +69,9 @@ def load_dataset(dataset_str, data_root, batch_size, test_batch_size, num_worker
 #     gt = images[1].to(device)
 
 #     return im1, im2, gt
-def build_input(x):
+def build_input(x, device):
     if torch.cuda.is_available():
-        x = x.cuda()
+        x = x.to(device)
     return x
 
 

@@ -1,4 +1,6 @@
 import numpy as np
+import os
+import torch
 from os import listdir
 from PIL import Image
 from os.path import join, isdir, getsize
@@ -12,7 +14,7 @@ import pandas as pd
 import pickle
 import subprocess
 import math
-from pytorch_ssim import ssim as to_ssim
+from .pytorch_ssim import ssim as to_ssim
 
 def to_psnr(rec, gt):
     mse = torch.nn.functional.mse_loss(rec, gt, reduction='none')
@@ -772,7 +774,7 @@ class HomTex:
                     img3 = totensor(read_frame_yuv2rgb(stream, self.width, self.height, t+2, 8))[None,...].cuda()
 
                 # predict
-                    oup = model(img1, img3)
+                    oup, _ = model(img1, img3)
                 # Calculate average PSNR
                 oup_psnr.extend(to_psnr(oup, img2))
                 # Calculate average SSIM

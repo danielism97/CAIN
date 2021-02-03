@@ -105,9 +105,9 @@ def train(args, epoch):
     for i, (im1, gt, im2) in enumerate(train_loader):
 
         # Build input batch
-        im1 = build_input(im1)
-        gt = build_input(gt)
-        im2 = build_input(im2)
+        im1 = utils.build_input(im1, device)
+        gt = utils.build_input(gt, device)
+        im2 = utils.build_input(im2, device)
 
         # Forward
         optimizer.zero_grad()
