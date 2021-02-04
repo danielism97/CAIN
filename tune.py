@@ -85,7 +85,7 @@ model.load_state_dict(checkpoint['state_dict'])
 #     optimizer, mode='min', factor=0.5, patience=5, verbose=True)
 scheduler = torch.optim.lr_scheduler.StepLR(
             optimizer,
-            step_size=20,
+            step_size=400,
             gamma=0.5)
 
 # Initialize LPIPS model if used for evaluation
@@ -245,7 +245,7 @@ def main(args):
         train(args, epoch)
 
         # save checkpoint and run test
-        if (epoch+1)%5 == 0:
+        if (epoch+1)%50 == 0:
             torch.save({'epoch': epoch+1, 'state_dict': model.state_dict()}, ckpt_dir+'/model_epoch'+str(epoch+1).zfill(3)+'.pth')
             model.eval()
             test_loader.Test(model, epoch+1, result_dir)
